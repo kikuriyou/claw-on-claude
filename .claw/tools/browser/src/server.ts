@@ -12,7 +12,7 @@ import {
 import { generateSnapshot, resolveRef } from './element-refs.js';
 
 const server = new McpServer({
-  name: 'claudeclaw-browser',
+  name: 'claw-on-claude-browser',
   version: '0.1.0',
 });
 
@@ -215,7 +215,7 @@ server.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('claudeclaw-browser MCP server running on stdio');
+  console.error('claw-on-claude-browser MCP server running on stdio');
 }
 
 main().catch(async (err) => {
