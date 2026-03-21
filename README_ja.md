@@ -29,12 +29,8 @@
 git clone https://github.com/kikuriyou/claw-on-claude.git
 cd claw-on-claude
 
-# 2. ブラウザツールのビルド
-cd .claw/tools/browser
-npm install
-npx playwright install chromium   # Playwright管理のブラウザをダウンロード
-npm run build
-cd ../../..
+# 2. セットアップ実行
+./setup.sh
 
 # 3. Claude Code を起動
 claude
@@ -52,7 +48,7 @@ claude
 |------|-----------|------|
 | `BROWSER_HEADLESS` | `"true"` | `"false"` でブラウザ画面を表示（要ディスプレイ） |
 | `DISPLAY` | `":0"` | X11ディスプレイ番号（headed時のみ必要） |
-| `CHROME_PATH` | `/usr/bin/google-chrome` | Chrome実行パス（macOS: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`） |
+| `CHROME_PATH` | 自動検出 | Chromeパスの上書き（macOS/Linuxは自動判定） |
 
 ## ディレクトリ構成
 

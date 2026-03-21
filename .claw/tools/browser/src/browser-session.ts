@@ -4,23 +4,40 @@ let browser: Browser | null = null;
 let context: BrowserContext | null = null;
 let activePageIndex = 0;
 
-const CHROME_PATH = process.env.CHROME_PATH || '/usr/bin/google-chrome';
+function getChromePath(): string {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  if (process.platform === 'darwin') {
+    return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+  }
+  return '/usr/bin/google-chrome';
+}
+const CHROME_PATH = getChromePath();
 const VIEWPORT = { width: 1280, height: 720 };
 const HEADLESS = process.env.BROWSER_HEADLESS !== 'false';
+
+const CDP_URL = process.env.CDP_URL ?? 'http://localhost:9222';
 
 export async function ensureBrowser(): Promise<Browser> {
   if (browser && browser.isConnected()) return browser;
 
-  browser = await chromium.launch({
-    executablePath: CHROME_PATH,
-    headless: HEADLESS,
-    args: [
-      '--no-sandbox',
-      '--disable-gpu',
-      '--disable-dev-shm-usage',
-      `--window-size=${VIEWPORT.width},${VIEWPORT.height}`,
-    ],
-  });
+  // Try CDP connection first (user's running Chrome)
+  try {
+    browser = await chromium.connectOverCDP(CDP_URL);
+    console.error(`[browser] Connected to existing Chrome via CDP (${CDP_URL})`);
+  } catch {
+    // Fall back to launching a new browser instance
+    console.error('[browser] CDP connection failed, launching new Chrome instance');
+    browser = await chromium.launch({
+      executablePath: CHROME_PATH,
+      headless: HEADLESS,
+      args: [
+        '--no-sandbox',
+        '--disable-gpu',
+        '--disable-dev-shm-usage',
+        `--window-size=${VIEWPORT.width},${VIEWPORT.height}`,
+      ],
+    });
+  }
 
   browser.on('disconnected', () => {
     browser = null;
@@ -34,7 +51,9 @@ export async function ensureContext(): Promise<BrowserContext> {
   if (context) return context;
 
   const b = await ensureBrowser();
-  context = await b.newContext({ viewport: VIEWPORT });
+  // CDP接続時は既存コンテキストを使う（新規作成するとセッションが切れる）
+  const contexts = b.contexts();
+  context = contexts.length > 0 ? contexts[0] : await b.newContext({ viewport: VIEWPORT });
   return context;
 }
 

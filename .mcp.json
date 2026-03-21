@@ -4,7 +4,7 @@
       "command": "bash",
       "args": ["-c", "cd \"$(git rev-parse --show-toplevel)/.claw/tools/browser\" && npx tsx src/server.ts"],
       "env": {
-        "BROWSER_HEADLESS": "true"
+        "BROWSER_HEADLESS": "false"
       }
     }
   }

@@ -29,12 +29,8 @@ Persistent **identity, memory, and tools** across sessions.
 git clone https://github.com/kikuriyou/claw-on-claude.git
 cd claw-on-claude
 
-# 2. Build the browser tool
-cd .claw/tools/browser
-npm install
-npx playwright install chromium   # download Playwright-managed browser
-npm run build
-cd ../../..
+# 2. Run setup
+./setup.sh
 
 # 3. Launch Claude Code
 claude
@@ -52,7 +48,7 @@ Controlled via `env` in `.mcp.json`:
 |----------|---------|-------------|
 | `BROWSER_HEADLESS` | `"true"` | Set `"false"` to show browser window (requires display) |
 | `DISPLAY` | `":0"` | X11 display number (headed mode only) |
-| `CHROME_PATH` | `/usr/bin/google-chrome` | Chrome path (macOS: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`) |
+| `CHROME_PATH` | auto-detected | Override Chrome path if needed (auto-detects macOS/Linux) |
 
 ## Directory Structure
 
