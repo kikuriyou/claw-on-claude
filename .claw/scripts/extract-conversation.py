@@ -1,6 +1,6 @@
-#!/usr/bin/env -S uv run --python 3.13 --script
+#!/usr/bin/env -S uv run --script
 # /// script
-# requires-python = ">=3.13"
+# requires-python = ">=3.10"
 # ///
 """Extract user/assistant messages from Claude Code conversation logs.
 

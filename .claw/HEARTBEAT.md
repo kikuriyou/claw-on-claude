@@ -1,23 +1,23 @@
 # HEARTBEAT.md - Scheduled Jobs & Periodic Tasks
 
-セッション開始時にこのファイルを読み、すべてのCronジョブを登録すること。
+Read this file at session start and register all cron jobs defined here. Jobs are session-only — must be re-registered every session.
 
 ## Cron Jobs
 
 ### Daily Memory Recording
 - **Schedule:** `59 23 * * *`
-- **Description:** 日次メモリの整理と長期メモリへの昇格
+- **Description:** Organize daily memory and promote important items to long-term memory
 
-**手順:**
-1. 会話履歴を取得する:
+**Steps:**
+1. Extract conversation history:
    ```
-   uv run .claw/scripts/extract-conversation.py --date <今日の日付>
+   uv run .claw/scripts/extract-conversation.py --date <today's date>
    ```
-2. 出力内容と、既存の `.claw/memory/YYYY-MM-DD.md` を照合し、重要な出来事・決定・学びをサマリーにして `.claw/memory/YYYY-MM-DD.md` に作成or追記
-3. 日次メモから今後も役立つ重要事項を `.claw/MEMORY.md` に追記・更新（既存内容との重複確認をしてから）
-4. 特に記録・更新すべきことがなければスキップ
+2. Compare the output with the existing `.claw/memory/YYYY-MM-DD.md`, then create or append a summary of important events, decisions, and lessons
+3. Promote items worth keeping long-term to `.claw/MEMORY.md` (check for duplicates first)
+4. Skip if there's nothing to record or update
 
-**補足:**
-- 会話中の都度書き込みや Pre-Compaction Memory Flush で既にメモが蓄積されている前提
-- このジョブの主な役割は「整理と昇格」であり、ゼロからの記録ではない
-- 会話履歴の取得には `.claw/scripts/extract-conversation.py` を使用する
+**Notes:**
+- Assumes notes have been accumulated throughout the day via in-conversation writes and Pre-Compaction Memory Flush
+- The main role of this job is "organize and promote", not recording from scratch
+- Use `.claw/scripts/extract-conversation.py` to extract conversation history

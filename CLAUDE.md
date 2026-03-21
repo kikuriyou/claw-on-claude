@@ -54,24 +54,24 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 
 ### 🔄 Pre-Compaction Memory Flush
 
-OpenClaw の Memory Flush を参考にした仕組み。コンテキストが圧縮される前にメモリを保存する。
+Inspired by OpenClaw's Memory Flush. Save memories before context gets compacted.
 
-**トリガー条件（以下のいずれかに気づいたら実行）:**
-* 会話が非常に長くなっている（体感で20往復以上）
-* システムからコンテキスト圧縮の通知が来た
-* 複雑な作業が一段落したタイミング
+**Trigger when any of these apply:**
+* Conversation is very long (roughly 20+ exchanges)
+* System sends a context compaction notification
+* A complex task has just been completed
 
-**実行手順:**
-1. この会話で得られた重要な情報・決定・学びを振り返る
-2. `.claw/memory/YYYY-MM-DD.md` に追記（なければ作成）
-3. 特に重要なものは `.claw/MEMORY.md` にも反映
-4. 保存完了後、通常の作業を続行
+**Steps:**
+1. Reflect on important information, decisions, and lessons from this conversation
+2. Append to `.claw/memory/YYYY-MM-DD.md` (create if needed)
+3. Promote especially important items to `.claw/MEMORY.md`
+4. Resume normal work after saving
 
-**ルール（OpenClaw準拠）:**
-* `.claw/memory/YYYY-MM-DD.md` は **append-only**（既存内容を消さない）
-* タイムスタンプ付きバリアント（`YYYY-MM-DD-2.md` 等）は作らない。1日1ファイル
-* 保存すべきものがなければスキップ（無理に書かない）
-* フラッシュ中は他のワークスペースファイルを変更しない
+**Rules (OpenClaw-aligned):**
+* `.claw/memory/YYYY-MM-DD.md` is **append-only** (never delete existing content)
+* No timestamped variants (`YYYY-MM-DD-2.md` etc.) — one file per day
+* Skip if there's nothing worth saving (don't force it)
+* Don't modify other workspace files during a flush
 
 ### 📝 Write It Down - No "Mental Notes"!
 

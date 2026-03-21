@@ -1,89 +1,108 @@
 # claw-on-claude
 
-[OpenClaw](https://github.com/openclaw/openclaw) の設計思想を Claude Code 上で再現するワークスペースフレームワーク。
+[日本語](README_ja.md)
 
-セッションをまたいで**人格・記憶・ツール**を持ち越すAIアシスタント環境を構築します。
+A workspace framework that brings [OpenClaw](https://github.com/openclaw/openclaw)'s design philosophy to Claude Code.
 
-## 特徴
+Persistent **identity, memory, and tools** across sessions.
 
-- **人格の永続化** — `SOUL.md` / `IDENTITY.md` でセッションごとにアイデンティティを復元
-- **2層メモリ** — 日次ログ（append-only）+ 長期記憶の自動整理
-- **ブラウザ操作** — Playwright ベースの MCP サーバーでWeb操作を自動化
-- **Cronジョブ** — 日次メモリ整理などのスケジュールタスク
+## Features
 
-## 前提条件
+- **Persistent identity** — `SOUL.md` / `IDENTITY.md` restore personality each session
+- **Two-layer memory** — Daily logs (append-only) + curated long-term memory
+- **Browser automation** — Playwright-based MCP server for web interaction
+- **Cron jobs** — Scheduled tasks like daily memory consolidation
 
-| ツール | バージョン | 用途 |
-|--------|-----------|------|
-| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | 最新 | 実行基盤 |
-| Node.js | v18+ | ブラウザMCPサーバー |
-| [uv](https://docs.astral.sh/uv/) | 最新 | スクリプト実行（Python自動管理） |
-| Google Chrome | 最新 | ブラウザ自動操作 |
+## Prerequisites
 
-## セットアップ
+| Tool | Version | Purpose |
+|------|---------|---------|
+| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | latest | Runtime |
+| Node.js | v18+ | Browser MCP server |
+| [uv](https://docs.astral.sh/uv/) | latest | Script execution (manages Python automatically) |
+| Google Chrome / Chromium | latest | Browser automation |
+
+## Setup
 
 ```bash
-# 1. クローン
+# 1. Clone
 git clone https://github.com/kikuriyou/claw-on-claude.git
 cd claw-on-claude
 
-# 2. ブラウザツールのビルド
+# 2. Build the browser tool
 cd .claw/tools/browser
 npm install
+npx playwright install chromium   # download Playwright-managed browser
 npm run build
 cd ../../..
 
-# 3. Claude Code を起動
+# 3. Launch Claude Code
 claude
 ```
 
-初回起動時に `.claw/USER.md` と `.claw/MEMORY.md` が自動作成されます。
+On first launch, `.claw/USER.md` and `.claw/MEMORY.md` are created automatically.
 
-## 環境設定
+## Configuration
 
-### ブラウザ操作モード
+### Browser
 
-`.mcp.json` の `env` で制御します：
+Controlled via `env` in `.mcp.json`:
 
-| 変数 | デフォルト | 説明 |
-|------|-----------|------|
-| `BROWSER_HEADLESS` | `"true"` | `"false"` でブラウザ画面を表示（要ディスプレイ） |
-| `DISPLAY` | `":0"` | X11ディスプレイ番号（headed時のみ必要） |
-| `CHROME_PATH` | `/usr/bin/google-chrome` | Chrome実行パス（macOS: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`） |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BROWSER_HEADLESS` | `"true"` | Set `"false"` to show browser window (requires display) |
+| `DISPLAY` | `":0"` | X11 display number (headed mode only) |
+| `CHROME_PATH` | `/usr/bin/google-chrome` | Chrome path (macOS: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`) |
 
-## ディレクトリ構成
+## Directory Structure
 
 ```
 .
-├── CLAUDE.md                    # ワークスペース指示書
-├── .mcp.json                    # MCP サーバー設定
+├── CLAUDE.md                        # Workspace instructions
+├── .mcp.json                        # MCP server config
 └── .claw/
-    ├── SOUL.md                  # 人格定義
-    ├── IDENTITY.md              # アイデンティティ（名前・絵文字等）
-    ├── HEARTBEAT.md             # Cronジョブ定義
-    ├── USER.md                  # ユーザー情報（自動生成・git除外）
-    ├── MEMORY.md                # 長期記憶（自動生成・git除外）
-    ├── memory/                  # 日次ログ（自動生成・git除外）
+    ├── SOUL.md                      # Personality definition
+    ├── IDENTITY.md                  # Identity (name, emoji, etc.)
+    ├── HEARTBEAT.md                 # Cron job definitions
+    ├── USER.md                      # User info (auto-generated, git-ignored)
+    ├── MEMORY.md                    # Long-term memory (auto-generated, git-ignored)
+    ├── memory/                      # Daily logs (auto-generated, git-ignored)
     ├── scripts/
-    │   └── extract-conversation.py  # 会話ログ抽出
+    │   └── extract-conversation.py  # Conversation log extractor
     └── tools/
-        └── browser/             # ブラウザ MCP サーバー
-            ├── src/             # TypeScript ソース
-            ├── package.json
-            └── scripts/
+        └── browser/                 # Browser MCP server
+            ├── src/                 # TypeScript source
+            └── package.json
 ```
 
-## Cronジョブについて
+## Cron Jobs
 
-`HEARTBEAT.md` に定義されたCronジョブは **Claude Code のセッション中のみ有効** です。セッション終了時に消えるため、新しいセッションを開始するたびに自動で再登録されます（CLAUDE.md の指示による）。
+Cron jobs defined in `HEARTBEAT.md` are **session-only** — they expire when the session ends. They are automatically re-registered on each new session (per CLAUDE.md instructions).
 
-## カスタマイズ
+## Remote Access
 
-- `SOUL.md` — AIの性格・方針を変更
-- `IDENTITY.md` — 名前・絵文字を変更
-- `CLAUDE.md` — ワークスペースのルールを変更
-- `HEARTBEAT.md` — Cronジョブの追加・変更
+Use [Remote Control](https://code.claude.com/docs/en/remote-control) to connect to a running session from your phone or browser.
 
-## ライセンス
+```bash
+# Option 1: Dedicated Remote Control server
+claude remote-control --name "claw"
 
-MIT
+# Option 2: Normal session with Remote Control
+claude --remote-control
+
+# Option 3: Enable from within a running session
+/remote-control
+```
+
+Connect via the displayed URL or QR code at [claude.ai/code](https://claude.ai/code). Requires a Claude.ai subscription (Pro/Max/Team/Enterprise) with OAuth authentication.
+
+## Customization
+
+- `SOUL.md` — Change AI personality and principles
+- `IDENTITY.md` — Change name, emoji
+- `CLAUDE.md` — Change workspace rules
+- `HEARTBEAT.md` — Add or modify cron jobs
+
+## License
+
+[MIT](LICENSE)
