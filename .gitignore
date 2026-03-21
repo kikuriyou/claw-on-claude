@@ -1,6 +1,10 @@
 # dependencies
 node_modules/
 
+# prevent accidental root-level npm artifacts
+/package.json
+/package-lock.json
+
 # build output
 dist/
 
