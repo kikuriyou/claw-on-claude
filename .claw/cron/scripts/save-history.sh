@@ -10,7 +10,7 @@ LONG_TERM_MEMORY="$PROJECT_DIR/.claw/MEMORY.md"
 mkdir -p "$MEMORY_DIR"
 
 # Extract yesterday's conversations
-CONVERSATIONS="$(bash "$SCRIPT_DIR/extract-conversations.sh" "$YESTERDAY")"
+CONVERSATIONS="$(/opt/homebrew/bin/uv run "$SCRIPT_DIR/extract-conversation.py" --date "$YESTERDAY" --project-path "$PROJECT_DIR")"
 
 if [[ -z "$CONVERSATIONS" ]]; then
   echo "No conversations found for $YESTERDAY. Skipping."
@@ -39,7 +39,7 @@ EOF
 )"
 
 "$CLAUDE_BIN" -p "$PROMPT" \
-  --model claude-sonnet-4-6 \
+  --model claude-haiku-4-5 \
   --max-turns 10 \
   --allowedTools "Read Write Edit Glob Grep"
 
