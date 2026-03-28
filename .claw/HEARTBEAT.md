@@ -1,23 +1,22 @@
 # HEARTBEAT.md - Scheduled Jobs & Periodic Tasks
 
-Read this file at session start and register all cron jobs defined here. Jobs are session-only — must be re-registered every session.
+## Persistent Cron Jobs (crontab)
 
-## Cron Jobs
+Daily memory recording is now handled by crontab, running outside of Claude sessions.
+See `.claw/cron/README.md` for details.
 
-### Daily Memory Recording
-- **Schedule:** `59 23 * * *`
-- **Description:** Organize daily memory and promote important items to long-term memory
+- **Schedule:** `5 0 * * *` (毎日 00:05)
+- **Script:** `.claw/cron/scripts/save-history.sh`
+- **What it does:** 前日の会話履歴を抽出 → サマリを `.claw/memory/YYYY-MM-DD.md` に保存 → 重要事項を `.claw/MEMORY.md` に追記
 
-**Steps:**
-1. Extract conversation history:
-   ```
-   uv run .claw/scripts/extract-conversation.py --date <today's date>
-   ```
-2. Compare the output with the existing `.claw/memory/YYYY-MM-DD.md`, then create or append a summary of important events, decisions, and lessons
-3. Promote items worth keeping long-term to `.claw/MEMORY.md` (check for duplicates first)
-4. Skip if there's nothing to record or update
+管理コマンド:
+```bash
+bash .claw/cron/install.sh            # 登録
+bash .claw/cron/install.sh --uninstall # 解除
+crontab -l                             # 確認
+```
 
-**Notes:**
-- Assumes notes have been accumulated throughout the day via in-conversation writes and Pre-Compaction Memory Flush
-- The main role of this job is "organize and promote", not recording from scratch
-- Use `.claw/scripts/extract-conversation.py` to extract conversation history
+## Session-Only Jobs (CronCreate)
+
+セッション内で一時的に定期実行したい場合は `CronCreate` を使う。
+セッション終了で消えるので、永続化が必要なものは上記 crontab 方式を使うこと。

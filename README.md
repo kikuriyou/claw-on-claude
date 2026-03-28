@@ -10,7 +10,6 @@ Persistent **identity, memory, and tools** across sessions.
 
 - **Persistent identity** — `SOUL.md` / `IDENTITY.md` restore personality each session
 - **Two-layer memory** — Daily logs (append-only) + curated long-term memory
-- **Browser automation** — Playwright-based MCP server for web interaction
 - **Cron jobs** — Scheduled tasks like daily memory consolidation
 
 ## Prerequisites
@@ -18,9 +17,7 @@ Persistent **identity, memory, and tools** across sessions.
 | Tool | Version | Purpose |
 |------|---------|---------|
 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | latest | Runtime |
-| Node.js | v18+ | Browser MCP server |
 | [uv](https://docs.astral.sh/uv/) | latest | Script execution (manages Python automatically) |
-| Google Chrome / Chromium | latest | Browser automation |
 
 ## Setup
 
@@ -40,15 +37,16 @@ On first launch, `.claw/USER.md` and `.claw/MEMORY.md` are created automatically
 
 ## Configuration
 
-### Browser
+## Browser Automation
 
-Controlled via `env` in `.mcp.json`:
+Use `claude --chrome` to operate your logged-in Chrome browser. Requires the [Claude in Chrome](https://chromewebstore.google.com/detail/claude-in-chrome/fcoeoabgfenejglbffodgkkbkcdhcgfn) extension.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `BROWSER_HEADLESS` | `"true"` | Set `"false"` to show browser window (requires display) |
-| `DISPLAY` | `":0"` | X11 display number (headed mode only) |
-| `CHROME_PATH` | auto-detected | Override Chrome path if needed (auto-detects macOS/Linux) |
+```bash
+# Launch with Chrome integration
+claude --chrome
+```
+
+See `CLAUDE.md` for browser usage guidelines.
 
 ## Directory Structure
 
@@ -63,17 +61,22 @@ Controlled via `env` in `.mcp.json`:
     ├── USER.md                      # User info (auto-generated, git-ignored)
     ├── MEMORY.md                    # Long-term memory (auto-generated, git-ignored)
     ├── memory/                      # Daily logs (auto-generated, git-ignored)
-    ├── scripts/
-    │   └── extract-conversation.py  # Conversation log extractor
-    └── tools/
-        └── browser/                 # Browser MCP server
-            ├── src/                 # TypeScript source
-            └── package.json
+    └── scripts/
+        └── extract-conversation.py  # Conversation log extractor
 ```
 
 ## Cron Jobs
 
 Cron jobs defined in `HEARTBEAT.md` are **session-only** — they expire when the session ends. They are automatically re-registered on each new session (per CLAUDE.md instructions).
+
+## Discord Integration
+
+Connect Claude to Discord as a channel. See [Channels documentation](https://code.claude.com/docs/en/channels) for setup instructions.
+
+```bash
+# Launch with Discord + Chrome integration
+claude --channels plugin:discord@claude-plugins-official --chrome --dangerously-skip-permissions
+```
 
 ## Remote Access
 

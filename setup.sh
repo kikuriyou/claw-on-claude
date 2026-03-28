@@ -1,17 +1,28 @@
 #!/usr/bin/env bash
 set -e
 
-BROWSER_DIR="$(cd "$(dirname "$0")/.claw/tools/browser" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-echo "==> Installing dependencies..."
-cd "$BROWSER_DIR"
-npm install
+# .env setup
+if [[ ! -f "$SCRIPT_DIR/.env" ]]; then
+  echo "Creating .env from .env.example..."
+  cp "$SCRIPT_DIR/.env.example" "$SCRIPT_DIR/.env"
+  echo "Please edit .env and set your ANTHROPIC_API_KEY."
+  echo "  vim $SCRIPT_DIR/.env"
+fi
 
-echo "==> Installing Playwright Chromium..."
-npx playwright install chromium
+# macOS: cron requires Full Disk Access
+if [[ "$(uname)" == "Darwin" ]]; then
+  echo ""
+  echo "⚠️  macOS requires Full Disk Access for cron."
+  echo "   System Settings → Privacy & Security → Full Disk Access"
+  echo "   Add /usr/sbin/cron (Cmd+Shift+G in Finder to navigate)"
+  echo ""
+fi
 
-echo "==> Building browser MCP server..."
-npm run build
+# cron jobs
+if [[ -f "$SCRIPT_DIR/.claw/cron/install.sh" ]]; then
+  bash "$SCRIPT_DIR/.claw/cron/install.sh"
+fi
 
-echo ""
 echo "Setup complete. Run 'claude' to start."

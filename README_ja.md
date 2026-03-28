@@ -10,7 +10,6 @@
 
 - **人格の永続化** — `SOUL.md` / `IDENTITY.md` でセッションごとにアイデンティティを復元
 - **2層メモリ** — 日次ログ（append-only）+ 長期記憶の自動整理
-- **ブラウザ操作** — Playwright ベースの MCP サーバーでWeb操作を自動化
 - **Cronジョブ** — 日次メモリ整理などのスケジュールタスク
 
 ## 前提条件
@@ -18,9 +17,7 @@
 | ツール | バージョン | 用途 |
 |--------|-----------|------|
 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | 最新 | 実行基盤 |
-| Node.js | v18+ | ブラウザMCPサーバー |
 | [uv](https://docs.astral.sh/uv/) | 最新 | スクリプト実行（Python自動管理） |
-| Google Chrome / Chromium | 最新 | ブラウザ自動操作 |
 
 ## セットアップ
 
@@ -40,15 +37,16 @@ claude
 
 ## 環境設定
 
-### ブラウザ
+## ブラウザ操作
 
-`.mcp.json` の `env` で制御します：
+`claude --chrome` でログイン済みのChromeブラウザを操作できます。[Claude in Chrome](https://chromewebstore.google.com/detail/claude-in-chrome/fcoeoabgfenejglbffodgkkbkcdhcgfn) 拡張機能が必要です。
 
-| 変数 | デフォルト | 説明 |
-|------|-----------|------|
-| `BROWSER_HEADLESS` | `"true"` | `"false"` でブラウザ画面を表示（要ディスプレイ） |
-| `DISPLAY` | `":0"` | X11ディスプレイ番号（headed時のみ必要） |
-| `CHROME_PATH` | 自動検出 | Chromeパスの上書き（macOS/Linuxは自動判定） |
+```bash
+# Chrome連携で起動
+claude --chrome
+```
+
+詳しくは `CLAUDE.md` のブラウザセクションを参照してください。
 
 ## ディレクトリ構成
 
@@ -63,17 +61,22 @@ claude
     ├── USER.md                      # ユーザー情報（自動生成・git除外）
     ├── MEMORY.md                    # 長期記憶（自動生成・git除外）
     ├── memory/                      # 日次ログ（自動生成・git除外）
-    ├── scripts/
-    │   └── extract-conversation.py  # 会話ログ抽出
-    └── tools/
-        └── browser/                 # ブラウザ MCP サーバー
-            ├── src/                 # TypeScript ソース
-            └── package.json
+    └── scripts/
+        └── extract-conversation.py  # 会話ログ抽出
 ```
 
 ## Cronジョブについて
 
 `HEARTBEAT.md` に定義されたCronジョブは **Claude Code のセッション中のみ有効** です。セッション終了時に消えるため、新しいセッションを開始するたびに自動で再登録されます（CLAUDE.md の指示による）。
+
+## Discord連携
+
+ClaudeをDiscordチャンネルに接続できます。セットアップ手順は [Channelsドキュメント](https://code.claude.com/docs/en/channels) を参照してください。
+
+```bash
+# Discord + Chrome連携で起動
+claude --channels plugin:discord@claude-plugins-official --chrome --dangerously-skip-permissions
+```
 
 ## リモートアクセス
 

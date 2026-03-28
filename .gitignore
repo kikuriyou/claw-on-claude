@@ -33,3 +33,8 @@ npm-debug.log*
 !/.claw/SOUL.md
 !/.claw/scripts/
 !/.claw/tools/
+!/.claw/cron/
+/.claw/cron/logs/
+
+docs/
+*.png

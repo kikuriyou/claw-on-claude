@@ -29,9 +29,14 @@ Before doing anything else:
 
 If any file or directory doesn't exist, create it. Don't ask permission. Just do it.
 
-### Cron Jobs (Auto-Register)
+### Cron Jobs
 
-Read `.claw/HEARTBEAT.md` and register all cron jobs defined there. Jobs are session-only — must be re-registered every session.
+Persistent cron jobs are managed via crontab (see `.claw/cron/README.md`).
+- Jobs are defined in `.claw/cron/jobs.conf` and registered via `bash .claw/cron/install.sh`
+- These run outside of Claude sessions via `claude -p` (no session needed)
+- Daily memory save runs at 00:05 automatically
+
+For session-only jobs, use `CronCreate` (these are lost when the session ends).
 
 ## Memory
 
@@ -151,6 +156,30 @@ Reactions are lightweight social signals. Humans use them constantly — they sa
 
 Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (camera names, SSH details, voice preferences) in `TOOLS.md`.
 
+**Available Skills:**
+* (skills are in `.claude/skills/`)
+
+## Browser (claude --chrome)
+
+`claude --chrome` でログイン済みChromeを操作。
+
+### 運用ルール
+- 操作前に `tabs_context_mcp` で接続確認
+- 新タスクは新規タブで（既存タブを壊さない）
+- 操作前後に `computer(screenshot)` で状況把握
+- クリック対象は `read_page` / `find` で ref_id 取得してから
+- **外部送信操作（メール送信、予定作成等）は実行前にユーザー確認**
+- エラー2回で同じ操作を繰り返さず報告
+
+### 検証済みパターン
+- Gmail: navigate後 `computer(wait, 3s)` で待つ。`find` が失敗したら screenshot → 座標クリックにフォールバック
+- Calendar: navigate後 `computer(wait, 3s)`。`get_page_text` で週の予定取得可能
+- `find` が要素を見つけられない場合は screenshot → 座標クリック
+
+### バックグラウンド実行（cron）
+- Chrome GUI + 拡張機能が必要（headless不可）
+- Chrome閉じていると失敗する → 常時起動運用
+
 **🎭 Voice Storytelling:** If you have `sag` (ElevenLabs TTS), use voice for stories, movie summaries, and "storytime" moments! Way more engaging than walls of text. Surprise people with funny voices.
 
 **📝 Platform Formatting:**
@@ -167,7 +196,7 @@ Default heartbeat prompt:
 
 You are free to edit `HEARTBEAT.md` with a short checklist or reminders. Keep it small to limit token burn.
 
-### Heartbeat vs Cron: When to Use Each
+### Heartbeat vs Cron vs crontab: When to Use Each
 
 **Use heartbeat when:**
 * Multiple checks can batch together (inbox + calendar + notifications in one turn)
@@ -175,12 +204,15 @@ You are free to edit `HEARTBEAT.md` with a short checklist or reminders. Keep it
 * Timing can drift slightly (every ~30 min is fine, not exact)
 * You want to reduce API calls by combining periodic checks
 
-**Use cron when:**
-* Exact timing matters ("9:00 AM sharp every Monday")
-* Task needs isolation from main session history
-* You want a different model or thinking level for the task
+**Use CronCreate (session-only) when:**
 * One-shot reminders ("remind me in 20 minutes")
-* Output should deliver directly to a channel without main session involvement
+* Temporary recurring checks during a session
+
+**Use crontab (persistent, `.claw/cron/`) when:**
+* Task must run even when no session is active
+* Exact timing matters ("every day at 00:05")
+* Task needs isolation from main session history
+* You want a different model for the task (via `--model`)
 
 **Things to check (rotate through these, 2-4 times per day):**
 * **Emails** - Any urgent unread messages?
