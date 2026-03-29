@@ -29,14 +29,29 @@ Before doing anything else:
 
 If any file or directory doesn't exist, create it. Don't ask permission. Just do it.
 
-### Cron Jobs
+5. Check for unprocessed conversation summaries (up to 7 days back)
+   - Scan `.claw/memory/` for missing `YYYY-MM-DD.md` files
+   - For each missing date, run `extract-conversation.py` to extract conversations
+   - Generate a summary and save to `.claw/memory/YYYY-MM-DD.md`
+   - Promote important items to `.claw/MEMORY.md`
+6. Verify periodic CronCreate jobs are registered
+   - Run `CronList` to check existing jobs
+   - If missing, register: 3-hour memory flush + daily 00:05 summary (see below)
 
-Persistent cron jobs are managed via crontab (see `.claw/cron/README.md`).
-- Jobs are defined in `.claw/cron/jobs.conf` and registered via `bash .claw/cron/install.sh`
-- These run outside of Claude sessions via `claude -p` (no session needed)
-- Daily memory save runs at 00:05 automatically
+### Periodic Jobs (CronCreate, session-only)
 
-For session-only jobs, use `CronCreate` (these are lost when the session ends).
+Periodic jobs run via `CronCreate`. These are session-only and lost when Claude exits.
+On startup (step 6), always run `CronList` — if jobs are missing, re-register them.
+
+**Registered jobs:**
+
+| Job | Schedule | What it does |
+|---|---|---|
+| Memory Flush | `7 */3 * * *` (3時間おき) | 直近の会話から重要事項を `.claw/memory/YYYY-MM-DD.md` に追記。何もなければスキップ |
+| Daily Summary | `5 0 * * *` (毎日 00:05) | 前日の会話を `extract-conversation.py` で抽出 → サマリ生成 → `.claw/MEMORY.md` に重要事項昇格 |
+
+**旧方式 (crontab, 無効化済み):**
+crontab + `claude -p` による定期実行は廃止。参考: `.claw/cron/README.md`
 
 ## Memory
 
@@ -57,11 +72,12 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 * This is your curated memory — the distilled essence, not raw logs
 * Over time, review your daily files and update `.claw/MEMORY.md` with what's worth keeping
 
-### 🔄 Pre-Compaction Memory Flush
+### 🔄 Memory Flush (Pre-Compaction & Periodic)
 
-Inspired by OpenClaw's Memory Flush. Save memories before context gets compacted.
+Save memories before context gets compacted, and periodically via CronCreate (3時間おき).
 
 **Trigger when any of these apply:**
+* CronCreate の3時間おきフラッシュが発火
 * Conversation is very long (roughly 20+ exchanges)
 * System sends a context compaction notification
 * A complex task has just been completed
@@ -187,78 +203,15 @@ Skills provide your tools. When you need one, check its `SKILL.md`. Keep local n
 * **Discord links:** Wrap multiple links in `<>` to suppress embeds: `<https://example.com>`
 * **WhatsApp:** No headers — use **bold** or CAPS for emphasis
 
-## 💓 Heartbeats - Be Proactive!
+## 💓 Heartbeats & Periodic Jobs
 
-When you receive a heartbeat poll, don't just reply `HEARTBEAT_OK` every time. Use heartbeats productively!
+定期実行ジョブとheartbeatの詳細は **`.claw/HEARTBEAT.md`** を参照。
 
-Default heartbeat prompt:
-`Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`
+セッション起動時に `CronList` で確認し、未登録なら HEARTBEAT.md に定義されたジョブを `CronCreate` で登録すること。
 
-You are free to edit `HEARTBEAT.md` with a short checklist or reminders. Keep it small to limit token burn.
-
-### Heartbeat vs Cron vs crontab: When to Use Each
-
-**Use heartbeat when:**
-* Multiple checks can batch together (inbox + calendar + notifications in one turn)
-* You need conversational context from recent messages
-* Timing can drift slightly (every ~30 min is fine, not exact)
-* You want to reduce API calls by combining periodic checks
-
-**Use CronCreate (session-only) when:**
-* One-shot reminders ("remind me in 20 minutes")
-* Temporary recurring checks during a session
-
-**Use crontab (persistent, `.claw/cron/`) when:**
-* Task must run even when no session is active
-* Exact timing matters ("every day at 00:05")
-* Task needs isolation from main session history
-* You want a different model for the task (via `--model`)
-
-**Things to check (rotate through these, 2-4 times per day):**
-* **Emails** - Any urgent unread messages?
-* **Calendar** - Upcoming events in next 24-48h?
-* **Mentions** - Twitter/social notifications?
-* **Weather** - Relevant if your human might go out?
-
-**Track your checks** in `.claw/memory/heartbeat-state.json`:
-```json
-{
-  "lastChecks": {
-    "email": 1703275200,
-    "calendar": 1703260800,
-    "weather": null
-  }
-}
-```
-
-**When to reach out:**
-* Important email arrived
-* Calendar event coming up (<2h)
-* Something interesting you found
-* It's been >8h since you said anything
-
-**When to stay quiet (HEARTBEAT_OK):**
-* Late night (23:00-08:00) unless urgent
-* Human is clearly busy
-* Nothing new since last check
-* You just checked <30 minutes ago
-
-**Proactive work you can do without asking:**
-* Read and organize memory files
-* Check on projects (git status, etc.)
-* Update documentation
-* Commit and push your own changes
-* **Review and update `.claw/MEMORY.md`**
-
-### 🔄 Memory Maintenance (During Heartbeats)
-
-Periodically (every few days), use a heartbeat to:
-1. Read through recent `.claw/memory/YYYY-MM-DD.md` files
-2. Identify significant events, lessons, or insights worth keeping long-term
-3. Update `.claw/MEMORY.md` with distilled learnings
-4. Remove outdated info from `.claw/MEMORY.md` that's no longer relevant
-
-The goal: Be helpful without being annoying. Check in a few times a day, do useful background work, but respect quiet time.
+**Heartbeat vs CronCreate:**
+* **Heartbeat**: タイミング不正確でOK、バッチ処理向き、会話コンテキストが必要なとき
+* **CronCreate**: 正確なタイミングが必要、セッション再起動で消える（起動時に再登録）
 
 ## Make It Yours
 
