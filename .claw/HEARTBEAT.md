@@ -20,10 +20,15 @@ CronCreate はセッション終了で消える。起動時に毎回再登録す
 - **Schedule:** `3 5 * * *`
 - **Prompt:** `Morning Briefing: 以下を確認してユーザーに報告してください。1) Gmail: 昨日の未読メール一覧と、重要と思われるものをピックアップ 2) Google Calendar: 今日の予定サマリ 3) Weather: 今日の天気と注意点（東京）。簡潔に箇条書きで。`
 
-### X Timeline Check (毎朝 09:00)
+### X Timeline Check (1日2回: 06:00, 18:00)
 
-- **Schedule:** `3 9 * * *`
+- **Schedule:** `3 6 * * *` / `3 18 * * *`
 - **Prompt:** `X Timeline Check: ブラウザでX (x.com/home) を開き、ログイン済みタイムライン（For You）の最新投稿を確認してください。重要・面白い内容をサマリとして箇条書きで報告。トレンドも確認。`
+
+### CronCreate Health Check (毎日 04:03)
+
+- **Schedule:** `3 4 * * *`
+- **Prompt:** `CronCreate Health Check: 全ジョブを再登録します。手順: 1) CronListで現在の全ジョブを取得 2) 全ジョブをCronDeleteで削除 3) .claw/HEARTBEAT.md を読んで定義されている全ジョブをCronCreateで再登録（このHealth Check自体も含む）。これにより7日期限がリセットされ、全ジョブが最新の定義で動作します。`
 
 ## Heartbeat Behavior
 

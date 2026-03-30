@@ -34,21 +34,20 @@ If any file or directory doesn't exist, create it. Don't ask permission. Just do
    - For each missing date, run `extract-conversation.py` to extract conversations
    - Generate a summary and save to `.claw/memory/YYYY-MM-DD.md`
    - Promote important items to `.claw/MEMORY.md`
-6. Verify periodic CronCreate jobs are registered
-   - Run `CronList` to check existing jobs
-   - If missing, register: 3-hour memory flush + daily 00:05 summary (see below)
+6. **CronCreate ジョブを必ず登録する（毎セッション必須、スキップ不可）**
+   - CronCreate ジョブはセッション終了で消えるため、**毎回必ず再登録する**
+   - `.claw/HEARTBEAT.md` を読み、定義されている **全ジョブ** を `CronCreate` で登録せよ
+   - HEARTBEAT.md にはジョブごとの Schedule（cron式）と Prompt が書いてある。そのまま CronCreate に渡すこと
+   - CronList で確認する必要はない。新セッション＝ジョブゼロなので、無条件で全登録する
+   - **ユーザーの最初のメッセージに応答する前に完了させること**
 
 ### Periodic Jobs (CronCreate, session-only)
 
 Periodic jobs run via `CronCreate`. These are session-only and lost when Claude exits.
 On startup (step 6), always run `CronList` — if jobs are missing, re-register them.
 
-**Registered jobs:**
-
-| Job | Schedule | What it does |
-|---|---|---|
-| Memory Flush | `7 */3 * * *` (3時間おき) | 直近の会話から重要事項を `.claw/memory/YYYY-MM-DD.md` に追記。何もなければスキップ |
-| Daily Summary | `5 0 * * *` (毎日 00:05) | 前日の会話を `extract-conversation.py` で抽出 → サマリ生成 → `.claw/MEMORY.md` に重要事項昇格 |
+ジョブの定義（スケジュール・プロンプト）は **`.claw/HEARTBEAT.md`** に一元管理されている。
+CLAUDE.md にはジョブ内容を重複して書かない。必ず HEARTBEAT.md を参照すること。
 
 **旧方式 (crontab, 無効化済み):**
 crontab + `claude -p` による定期実行は廃止。参考: `.claw/cron/README.md`
