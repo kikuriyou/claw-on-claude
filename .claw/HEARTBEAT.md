@@ -5,30 +5,32 @@
 セッション起動時に `CronList` で確認し、未登録なら以下を `CronCreate` で登録する。
 CronCreate はセッション終了で消える。起動時に毎回再登録すること。
 
+※ Discord の chat_id は `.claw/config.local.md`（gitignored）に記載。各ジョブ実行時にそのファイルを読んで取得すること。
+
 ### Memory Flush (3時間おき)
 
 - **Schedule:** `7 */3 * * *`
-- **Prompt:** `Memory Flush: 直近の会話を振り返り、重要な決定・学び・実装内容があれば .claw/memory/YYYY-MM-DD.md（今日の日付）に追記してください。何もなければスキップ。ルール: append-only、簡潔に、重複しない。`
+- **Prompt:** `Memory Flush: 直近の会話を振り返り、重要な決定・学び・実装内容があれば .claw/memory/YYYY-MM-DD.md（今日の日付）に追記してください。ルール: append-only、簡潔に、重複しない。完了後、結果（追記した内容 or スキップ理由）を .claw/config.local.md に記載のDiscord chat_id に reply ツールで送信すること。`
 
 ### Daily Summary (毎日 00:05)
 
 - **Schedule:** `5 0 * * *`
-- **Prompt:** `Daily Summary: 前日の会話サマリを生成してください。手順: 1) uv run .claw/cron/scripts/extract-conversation.py --date $(date -v-1d +%Y-%m-%d) --project-path . で前日の会話を抽出 2) 抽出した内容を要約して .claw/memory/YYYY-MM-DD.md（前日の日付）に保存 3) 特に重要な決定事項・学びがあれば .claw/MEMORY.md に追記。既にファイルがあれば追記（append-only）。会話がなければスキップ。`
+- **Prompt:** `Daily Summary: 前日の会話サマリを生成してください。手順: 1) uv run .claw/cron/scripts/extract-conversation.py --date $(date -v-1d +%Y-%m-%d) --project-path . で前日の会話を抽出 2) 抽出した内容を要約して .claw/memory/YYYY-MM-DD.md（前日の日付）に保存 3) 特に重要な決定事項・学びがあれば .claw/MEMORY.md に追記。既にファイルがあれば追記（append-only）。会話がなければスキップ。完了後、結果サマリを .claw/config.local.md に記載のDiscord chat_id に reply ツールで送信すること。`
 
 ### Morning Briefing (毎朝 05:00)
 
 - **Schedule:** `3 5 * * *`
-- **Prompt:** `Morning Briefing: 以下を確認してユーザーに報告してください。1) Gmail: 昨日の未読メール一覧と、重要と思われるものをピックアップ 2) Google Calendar: 今日の予定サマリ 3) Weather: 今日の天気と注意点（東京）。簡潔に箇条書きで。`
+- **Prompt:** `Morning Briefing: .claw/config.local.md に記載のDiscord chat_id に reply ツールで以下を報告してください。1) Gmail: 昨日の未読メール一覧と、重要と思われるものをピックアップ 2) Google Calendar: 今日の予定サマリ 3) Weather: 今日の天気と注意点（東京）。簡潔に箇条書きで。`
 
 ### X Timeline Check (1日2回: 06:00, 18:00)
 
 - **Schedule:** `3 6 * * *` / `3 18 * * *`
-- **Prompt:** `X Timeline Check: ブラウザでX (x.com/home) を開き、ログイン済みタイムライン（For You）の最新投稿を確認してください。重要・面白い内容をサマリとして箇条書きで報告。トレンドも確認。`
+- **Prompt:** `X Timeline Check: ブラウザでX (x.com/home) を開き、ログイン済みタイムライン（For You）の最新投稿を確認してください。重要・面白い内容をサマリとして箇条書きにまとめ、.claw/config.local.md に記載のDiscord chat_id に reply ツールで送信すること。トレンドも確認。`
 
 ### CronCreate Health Check (毎日 04:03)
 
 - **Schedule:** `3 4 * * *`
-- **Prompt:** `CronCreate Health Check: 全ジョブを再登録します。手順: 1) CronListで現在の全ジョブを取得 2) 全ジョブをCronDeleteで削除 3) .claw/HEARTBEAT.md を読んで定義されている全ジョブをCronCreateで再登録（このHealth Check自体も含む）。これにより7日期限がリセットされ、全ジョブが最新の定義で動作します。`
+- **Prompt:** `CronCreate Health Check: 全ジョブを再登録します。手順: 1) CronListで現在の全ジョブを取得 2) 全ジョブをCronDeleteで削除 3) .claw/HEARTBEAT.md を読んで定義されている全ジョブをCronCreateで再登録（このHealth Check自体も含む）。完了後、登録済みジョブ一覧を .claw/config.local.md に記載のDiscord chat_id に reply ツールで送信すること。`
 
 ## Heartbeat Behavior
 
